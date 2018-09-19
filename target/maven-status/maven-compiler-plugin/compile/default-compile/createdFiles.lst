@@ -1,5 +1,7 @@
+com\fypcdr\app\stream\server\CDRTemplates$CDRRecord.class
+com\fypcdr\app\stream\server\Routes.class
+com\fypcdr\app\stream\server\Server.class
 com\fypcdr\app\stream\server\CDRTemplates$CDRTemplate2.class
 com\fypcdr\app\stream\server\CDRTemplates.class
 com\fypcdr\app\stream\server\CDRTemplates$CDRTemplate1.class
-com\fypcdr\app\stream\server\Routes.class
-com\fypcdr\app\stream\server\Server.class
+com\fypcdr\app\stream\server\CDRSource.class

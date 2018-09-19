@@ -11,10 +11,8 @@ import akka.http.javadsl.server.AllDirectives;
 import akka.http.javadsl.server.Route;
 import akka.http.javadsl.unmarshalling.StringUnmarshallers;
 import akka.stream.javadsl.Flow;
-import akka.stream.javadsl.Source;
 import akka.util.ByteString;
 import akka.util.Timeout;
-import com.fypcdr.app.stream.server.CDRTemplates.CDRTemplate1;
 import scala.concurrent.duration.Duration;
 
 import java.util.concurrent.TimeUnit;
@@ -26,7 +24,8 @@ import java.util.concurrent.TimeUnit;
 public class Routes extends AllDirectives {
 
     final private LoggingAdapter log;
-
+    final private CDRSource cdrSource;
+            
     final ByteString start = ByteString.fromString("[");
     final ByteString between = ByteString.fromString(",");
     final ByteString end = ByteString.fromString("]");
@@ -38,7 +37,8 @@ public class Routes extends AllDirectives {
       .withFramingRendererFlow(compactArrayRendering);
     
     public Routes(ActorSystem system) {
-        log = Logging.getLogger(system, this);
+        this.log = Logging.getLogger(system, this);
+        this.cdrSource = new CDRSource();
     }
 
     Timeout timeout = new Timeout(Duration.create(5, TimeUnit.SECONDS));
@@ -58,19 +58,7 @@ public class Routes extends AllDirectives {
             -> route(
                 get(() -> 
                     parameter(StringUnmarshallers.INTEGER, "n", n -> {
-                    final Source<CDRTemplate1, NotUsed> cdrSource // test soource
-                    = Source.repeat(
-                            new CDRTemplate1(
-                                    "AZ12",
-                                    "0771548751",
-                                    "MH45",
-                                    "0714215741",
-                                    "XC47",
-                                    "1256",
-                                    "20180512"
-                            )).take(n);
-
-                    return completeOKWithSource(cdrSource, Jackson.marshaller(), compactJsonSupport);
+                    return completeOKWithSource(cdrSource.getCDRSource(n), Jackson.marshaller(), compactJsonSupport);
                 })
                 )
             )
