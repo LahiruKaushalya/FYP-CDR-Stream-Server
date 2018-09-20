@@ -13,6 +13,7 @@ import akka.stream.ActorMaterializer;
 import akka.stream.javadsl.Flow;
 
 import java.util.concurrent.CompletionStage;
+
 /**
  *
  * @author Lahiru Kaushalya
@@ -25,14 +26,12 @@ public class Server extends AllDirectives {
 
     public Server(ActorSystem system) {
         this.routes = new Routes(system);
-        Server.ipAddress = "localhost";
-        Server.port = 8080;
+        readSettings();
     }
     
     public static void main(String[] args) throws Exception {
         
         ActorSystem system = ActorSystem.create("CDRHttpServer");
-
         final Http http = Http.get(system);
         final ActorMaterializer materializer = ActorMaterializer.create(system);
 
@@ -52,6 +51,12 @@ public class Server extends AllDirectives {
 
     protected Route createRoute() {
         return routes.routes();
+    }
+    
+    private void readSettings()
+    {
+        ipAddress = Settings.ipAddress;
+        port = Settings.port;
     }
 }
 

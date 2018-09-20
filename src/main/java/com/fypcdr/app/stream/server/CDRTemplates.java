@@ -6,7 +6,7 @@ package com.fypcdr.app.stream.server;
  */
 public interface CDRTemplates {
     
-    public static abstract class CDRRecord // Base CDR template
+    abstract class CDRRecord // Base CDR template
     {
         private final String cdrId;
         private final String duration;
@@ -36,7 +36,7 @@ public interface CDRTemplates {
         
     }
     
-    public static class CDRTemplate1 extends CDRRecord{
+    class CDRTemplate1 extends CDRRecord{
         
         private final String callingNumber;
         private final String callingTower;
@@ -76,7 +76,7 @@ public interface CDRTemplates {
         }
     } // Template 1
     
-    public static class CDRTemplate2 extends CDRRecord{
+     class CDRTemplate2 extends CDRRecord{
         
         private final String field1;
 
