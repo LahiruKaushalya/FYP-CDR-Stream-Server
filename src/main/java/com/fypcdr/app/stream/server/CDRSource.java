@@ -11,14 +11,21 @@ import java.util.List;
  */
 public class CDRSource {
     
+    private List<CDRTemplates.CDRRecord> cdrRecords;
+    
+    public CDRSource()
+    {
+        this.cdrRecords = new ArrayList<>();
+    }
+    
     public Source<CDRTemplates.CDRRecord, NotUsed> getCDRSource(int n)
     {
         Source<CDRTemplates.CDRRecord, NotUsed> cdrSource 
-            = Source.from(createCDRs());
+            = Source.from(createCDRs(n));
         return cdrSource;
     }
     
-    private static List<CDRTemplates.CDRRecord> createCDRs()
+    private static List<CDRTemplates.CDRRecord> createCDRs(int n)
     {
         List<CDRTemplates.CDRRecord> cdrRecords = new ArrayList<>();
         
