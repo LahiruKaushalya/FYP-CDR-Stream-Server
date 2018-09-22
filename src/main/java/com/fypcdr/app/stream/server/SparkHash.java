@@ -24,6 +24,7 @@ import java.util.List;
 public class SparkHash {
     public static List<JSONObject> getCDR(){
         SparkConf conf = new SparkConf().setAppName("TEST_spark").setMaster("local");
+        conf.set("spark.testing.memory", "2147480000");
         JavaSparkContext sc = new JavaSparkContext(conf);
 
         Properties prop = new Properties();
