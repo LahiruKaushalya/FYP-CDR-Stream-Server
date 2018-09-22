@@ -14,18 +14,32 @@ import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.Function;
 import scala.Tuple2;
 import org.json.simple.JSONObject;
-
-
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
 import java.util.List;
-import java.util.StringJoiner;
 
 public class SparkHash {
     public static List<JSONObject> getCDR(){
         SparkConf conf = new SparkConf().setAppName("TEST_spark").setMaster("local");
         JavaSparkContext sc = new JavaSparkContext(conf);
 
+        Properties prop = new Properties();
+        InputStream input = null;
+        try {
+            input = new FileInputStream("conf.properties");
+            // load a properties file
+            prop.load(input);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         Configuration hbaseConf = HBaseConfiguration.create();
-        hbaseConf.set(TableInputFormat.INPUT_TABLE, "cdr_test");
+        hbaseConf.set(TableInputFormat.INPUT_TABLE, prop.getProperty("table_name"));
         Long x = System.currentTimeMillis();
         JavaPairRDD<ImmutableBytesWritable, Result> javaPairRdd = sc.newAPIHadoopRDD(hbaseConf, TableInputFormat.class,ImmutableBytesWritable.class, Result.class);
         System.out.println(javaPairRdd.count());
@@ -35,20 +49,15 @@ public class SparkHash {
             public JSONObject call(Tuple2<ImmutableBytesWritable, Result> tuple) throws Exception {
                 Result result = tuple._2;
                 JSONObject cdr_json = new JSONObject();
-                String called_num = Bytes.toString(result.getValue(Bytes.toBytes("called_num"), Bytes.toBytes("called_num")));
-                called_num = DigestUtils.sha256Hex(called_num);
-                String called_tower = Bytes.toString(result.getValue(Bytes.toBytes("called_tower"), Bytes.toBytes("called_tower")));
-                String recipient_num = Bytes.toString(result.getValue(Bytes.toBytes("calling_num"), Bytes.toBytes("calling_num")));
-                recipient_num = DigestUtils.sha256Hex(recipient_num);
-                String recipient_tower = Bytes.toString(result.getValue(Bytes.toBytes("calling_tower"), Bytes.toBytes("calling_tower")));
-                String datetime = Bytes.toString(result.getValue(Bytes.toBytes("date_time"), Bytes.toBytes("date_time")));
-                String duration = Bytes.toString(result.getValue(Bytes.toBytes("duration"), Bytes.toBytes("duration")));
-                cdr_json.put("called_num", called_num);
-                cdr_json.put("called_tower", called_tower);
-                cdr_json.put("recipient_num", recipient_num);
-                cdr_json.put("recipient_tower", recipient_tower);
-                cdr_json.put("datetime", datetime);
-                cdr_json.put("duration", duration);
+                for(int i=1; i<= Integer.parseInt(prop.getProperty("attribute_count")); i++){
+                    String attribute = prop.getProperty("a"+i);
+                    String method = prop.getProperty("m"+i);
+                    String value = Bytes.toString(result.getValue(Bytes.toBytes(attribute), Bytes.toBytes(attribute)));
+                    if(method.equals("SHA256")){
+                        value = DigestUtils.sha256Hex(value);
+                    }
+                    cdr_json.put(prop.getProperty("s"+i), value);
+                }
                 return cdr_json;
             }
         }); 
