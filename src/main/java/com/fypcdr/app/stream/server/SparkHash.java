@@ -25,7 +25,7 @@ public class SparkHash {
         JavaSparkContext sc = new JavaSparkContext(conf);
 
         Configuration hbaseConf = HBaseConfiguration.create();
-        hbaseConf.set(TableInputFormat.INPUT_TABLE, "cdr_test");
+        hbaseConf.set(TableInputFormat.INPUT_TABLE, "cdr_test_DA");
         Long x = System.currentTimeMillis();
         JavaPairRDD<ImmutableBytesWritable, Result> javaPairRdd = sc.newAPIHadoopRDD(hbaseConf, TableInputFormat.class,ImmutableBytesWritable.class, Result.class);
         System.out.println(javaPairRdd.count());
