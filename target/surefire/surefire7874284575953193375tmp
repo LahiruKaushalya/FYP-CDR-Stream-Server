@@ -1,7 +1,0 @@
-#surefire
-#Thu Sep 20 12:48:00 IST 2018
-maven.ext.class.path=C\:\\Program Files\\NetBeans 8.0.2\\java\\maven-nblib\\netbeans-eventspy.jar
-user.dir=C\:\\Users\\Lahiru Kaushalya\\Documents\\NetBeansProjects\\FYP-Stream-Server
-file.encoding=UTF-8
-localRepository=C\:\\Users\\Lahiru Kaushalya\\.m2\\repository
-basedir=C\:\\Users\\Lahiru Kaushalya\\Documents\\NetBeansProjects\\FYP-Stream-Server
