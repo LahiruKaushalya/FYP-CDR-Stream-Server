@@ -7,7 +7,6 @@ import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
 import org.apache.hadoop.hbase.mapreduce.TableInputFormat;
 import org.apache.hadoop.hbase.util.Bytes;
-import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
@@ -23,15 +22,13 @@ import java.util.List;
 
 public class SparkHash {
     public static List<JSONObject> getCDR(){
-        SparkConf conf = new SparkConf().setAppName("TEST_spark").setMaster("local");
-        conf.set("spark.testing.memory", "2147480000");
-        JavaSparkContext sc = new JavaSparkContext(conf);
+        JavaSparkContext sc = SingletonSparkContext.getSparkContext();
 
         Properties prop = new Properties();
         InputStream input = null;
         try {
             input = new FileInputStream("conf.properties");
-            // load a properties file
+            // load properties file
             prop.load(input);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
