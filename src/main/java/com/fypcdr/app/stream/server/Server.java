@@ -41,8 +41,14 @@ public class Server extends AllDirectives {
         final CompletionStage<ServerBinding> binding = http.bindAndHandle(routeFlow,
                 ConnectHttp.toHost(ipAddress, port), materializer);
 
-        System.out.println("Server online at http://"+ipAddress+":"+port+"/\nPress RETURN to stop...");
-        System.in.read(); 
+        System.out.println(
+                "Server online at http://"
+                + ipAddress
+                + ":"
+                + port
+                + "/\nPress RETURN to stop..."
+        );
+        System.in.read();
 
         binding
             .thenCompose(ServerBinding::unbind) 
