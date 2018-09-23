@@ -11,7 +11,7 @@ import org.json.simple.JSONObject;
 public class CDRSource {
     
 
-    public Source<JSONObject, NotUsed> getCDRSource(int provider, int start, int end)
+    public Source<JSONObject, NotUsed> getCDRSource(int start, int end)
     {
         Source<JSONObject, NotUsed> cdrSource = Source.from(SparkHash.getCDR().subList(0,start));
         return cdrSource;
