@@ -57,11 +57,12 @@ public class Routes extends AllDirectives {
         return pathEnd(()
             -> route(
                 get(()
+                    -> parameter(StringUnmarshallers.INTEGER, "provider", provider
                     -> parameter(StringUnmarshallers.INTEGER, "start", start
                     -> parameter(StringUnmarshallers.INTEGER, "end", end
                     -> {
-                        return completeOKWithSource(cdrSource.getCDRSource(start,end), Jackson.marshaller(), compactJsonSupport);
-                    }))
+                        return completeOKWithSource(cdrSource.getCDRSource(provider,start,end), Jackson.marshaller(), compactJsonSupport);
+                    })))
                 )
             )
         );
