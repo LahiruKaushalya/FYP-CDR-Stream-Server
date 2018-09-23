@@ -13,7 +13,7 @@ public class CDRSource {
 
     public Source<JSONObject, NotUsed> getCDRSource(int start, int end)
     {
-        Source<JSONObject, NotUsed> cdrSource = Source.from(SparkHash.getCDR().subList(0,start));
+        Source<JSONObject, NotUsed> cdrSource = Source.from(SparkHash.getCDR().subList(start,end));
         return cdrSource;
     }
 
