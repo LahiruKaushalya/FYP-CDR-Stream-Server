@@ -13,6 +13,7 @@ public class SingletonSparkContext {
         if (javaSparkContext == null){
             SparkConf sparkConf = new SparkConf().setAppName("CDR_STREAM_SERVER").setMaster("local");
             sparkConf.set("spark.testing.memory", "2147480000");
+            sparkConf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer");
             javaSparkContext = new JavaSparkContext(sparkConf);
         }
         return javaSparkContext;
