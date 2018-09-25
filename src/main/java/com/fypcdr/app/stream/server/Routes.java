@@ -12,10 +12,6 @@ import akka.http.javadsl.server.Route;
 import akka.http.javadsl.unmarshalling.StringUnmarshallers;
 import akka.stream.javadsl.Flow;
 import akka.util.ByteString;
-import akka.util.Timeout;
-import scala.concurrent.duration.Duration;
-
-import java.util.concurrent.TimeUnit;
 
 /**
  *
@@ -27,7 +23,7 @@ public class Routes extends AllDirectives {
     final private CDRSource cdrSource;
             
     final ByteString start = ByteString.fromString("[");
-    final ByteString between = ByteString.fromString(",");
+    final ByteString between = ByteString.fromString(Settings.jsonSeparator);
     final ByteString end = ByteString.fromString("]");
     
     final Flow<ByteString, ByteString, NotUsed> compactArrayRendering =
@@ -41,8 +37,6 @@ public class Routes extends AllDirectives {
         this.cdrSource = new CDRSource();
     }
 
-    Timeout timeout = new Timeout(Duration.create(5, TimeUnit.SECONDS));
-
     public Route routes() {
         return route(
             pathPrefix("cdrRecords", 
@@ -55,16 +49,21 @@ public class Routes extends AllDirectives {
 
     private Route getCDRRecords() {
         return pathEnd(()
-            -> route(
-                get(()
-                    -> parameter(StringUnmarshallers.INTEGER, "start", start
-                    -> parameter(StringUnmarshallers.INTEGER, "end", end
-                    -> {
-                        return completeOKWithSource(cdrSource.getCDRSource(start,end), Jackson.marshaller(), compactJsonSupport);
-                    }))
+            -> withoutSizeLimit(() 
+                -> route(
+                    get(()
+                        -> parameter(StringUnmarshallers.INTEGER, "start", _start
+                        -> parameter(StringUnmarshallers.INTEGER, "end", _end
+                        -> {
+                            System.out.println("GET request received.\nStreaming CDR records from " + start + " to " + end);
+                            return completeOKWithSource(cdrSource.getCDRSource(_start,_end), 
+                                Jackson.marshaller(), 
+                                compactJsonSupport
+                            );
+                        }))
+                    )
                 )
             )
         );
     }
-
 }

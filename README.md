@@ -8,7 +8,7 @@ port -> 8080
 
 GET request parameters 
 
-start, end
+start(integer), end(integer)
 
 http://ipAddress:port/cdrRecords?start={start_value}&end={end_value}
 
