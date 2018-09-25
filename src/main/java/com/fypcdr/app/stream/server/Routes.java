@@ -23,7 +23,7 @@ public class Routes extends AllDirectives {
     final private CDRSource cdrSource;
             
     final ByteString start = ByteString.fromString("[");
-    final ByteString between = ByteString.fromString("/");
+    final ByteString between = ByteString.fromString(Settings.jsonSeparator);
     final ByteString end = ByteString.fromString("]");
     
     final Flow<ByteString, ByteString, NotUsed> compactArrayRendering =
@@ -55,6 +55,7 @@ public class Routes extends AllDirectives {
                         -> parameter(StringUnmarshallers.INTEGER, "start", _start
                         -> parameter(StringUnmarshallers.INTEGER, "end", _end
                         -> {
+                            System.out.println("GET request received.\nStreaming CDR records from " + start + " to " + end);
                             return completeOKWithSource(cdrSource.getCDRSource(_start,_end), 
                                 Jackson.marshaller(), 
                                 compactJsonSupport
