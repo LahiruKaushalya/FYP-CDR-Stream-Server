@@ -21,7 +21,7 @@ import java.util.Properties;
 import java.util.List;
 
 public class SparkHash {
-    public static List<JSONObject> getCDR(){
+    public static List<JSONObject> getCDR(int start, int end){
         JavaSparkContext sc = SingletonSparkContext.getSparkContext();
 
         Properties prop = new Properties();
@@ -42,8 +42,9 @@ public class SparkHash {
         JavaPairRDD<ImmutableBytesWritable, Result> javaPairRdd = sc.newAPIHadoopRDD(hbaseConf, TableInputFormat.class,ImmutableBytesWritable.class, Result.class);
         System.out.println(javaPairRdd.count());
 
+        JavaPairRDD<ImmutableBytesWritable, Result> selectedRdd = sc.parallelizePairs(javaPairRdd.collect().subList(start, end));
 
-        JavaRDD<JSONObject> javaRDD = javaPairRdd.map(new Function<Tuple2<ImmutableBytesWritable,Result>, JSONObject>() {
+        JavaRDD<JSONObject> javaRDD = selectedRdd.map(new Function<Tuple2<ImmutableBytesWritable,Result>, JSONObject>() {
             public JSONObject call(Tuple2<ImmutableBytesWritable, Result> tuple) throws Exception {
                 Result result = tuple._2;
                 JSONObject cdr_json = new JSONObject();
