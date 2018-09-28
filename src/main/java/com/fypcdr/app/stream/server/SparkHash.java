@@ -4,8 +4,10 @@ import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.client.Result;
+import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
 import org.apache.hadoop.hbase.mapreduce.TableInputFormat;
+import org.apache.hadoop.hbase.mapreduce.TableMapReduceUtil;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
@@ -38,13 +40,19 @@ public class SparkHash {
 
         Configuration hbaseConf = HBaseConfiguration.create();
         hbaseConf.set(TableInputFormat.INPUT_TABLE, prop.getProperty("table_name"));
+        Scan scan = new Scan();
+        scan.setCaching(500);
+        try {
+            scan.setTimeRange(new Long(Long.parseLong(prop.getProperty("minimum_timestamp")) + new Long(start)), new Long(Long.parseLong(prop.getProperty("minimum_timestamp")) + new Long(end)));
+            hbaseConf.set(TableInputFormat.SCAN, TableMapReduceUtil.convertScanToString(scan));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         Long x = System.currentTimeMillis();
         JavaPairRDD<ImmutableBytesWritable, Result> javaPairRdd = sc.newAPIHadoopRDD(hbaseConf, TableInputFormat.class,ImmutableBytesWritable.class, Result.class);
         System.out.println(javaPairRdd.count());
 
-        JavaPairRDD<ImmutableBytesWritable, Result> selectedRdd = sc.parallelizePairs(javaPairRdd.collect().subList(start, end));
-
-        JavaRDD<JSONObject> javaRDD = selectedRdd.map(new Function<Tuple2<ImmutableBytesWritable,Result>, JSONObject>() {
+        JavaRDD<JSONObject> javaRDD = javaPairRdd.map(new Function<Tuple2<ImmutableBytesWritable,Result>, JSONObject>() {
             public JSONObject call(Tuple2<ImmutableBytesWritable, Result> tuple) throws Exception {
                 Result result = tuple._2;
                 JSONObject cdr_json = new JSONObject();
