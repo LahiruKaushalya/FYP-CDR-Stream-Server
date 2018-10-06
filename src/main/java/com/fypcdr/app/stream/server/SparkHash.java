@@ -40,18 +40,18 @@ public class SparkHash {
 
         Configuration hbaseConf = HBaseConfiguration.create();
         hbaseConf.set(TableInputFormat.INPUT_TABLE, prop.getProperty("table_name"));
-        Scan scan = new Scan();
-        scan.setCaching(500);
+        
         try {
-            scan.setTimeRange(new Long(Long.parseLong(prop.getProperty("minimum_timestamp")) + new Long(start)), new Long(Long.parseLong(prop.getProperty("minimum_timestamp")) + new Long(end)));
+            //Table must have integer row key
+            Scan scan = new Scan(Bytes.toBytes(start), Bytes.toBytes(end));
+            scan.setCaching(500);
             hbaseConf.set(TableInputFormat.SCAN, TableMapReduceUtil.convertScanToString(scan));
         } catch (IOException e) {
             e.printStackTrace();
         }
         Long x = System.currentTimeMillis();
         JavaPairRDD<ImmutableBytesWritable, Result> javaPairRdd = sc.newAPIHadoopRDD(hbaseConf, TableInputFormat.class,ImmutableBytesWritable.class, Result.class);
-        System.out.println(javaPairRdd.count());
-
+        
         JavaRDD<JSONObject> javaRDD = javaPairRdd.map(new Function<Tuple2<ImmutableBytesWritable,Result>, JSONObject>() {
             public JSONObject call(Tuple2<ImmutableBytesWritable, Result> tuple) throws Exception {
                 Result result = tuple._2;
