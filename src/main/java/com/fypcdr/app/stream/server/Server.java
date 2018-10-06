@@ -11,8 +11,15 @@ import akka.http.javadsl.server.AllDirectives;
 import akka.http.javadsl.server.Route;
 import akka.stream.ActorMaterializer;
 import akka.stream.javadsl.Flow;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
 
 import java.util.concurrent.CompletionStage;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -23,20 +30,40 @@ public class Server extends AllDirectives {
     private final Routes routes;
     private static String ipAddress;
     private static int port;
+    private static Properties prop;
 
-    public Server(ActorSystem system) {
+    public static Properties getProp() {
+        return prop;
+    }
+
+    public Server(ActorSystem system){
         this.routes = new Routes(system);
-        readSettings();
+        Server.prop = new Properties();
     }
     
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
         
         ActorSystem system = ActorSystem.create("CDRHttpServer");
         final Http http = Http.get(system);
         final ActorMaterializer materializer = ActorMaterializer.create(system);
 
         Server app = new Server(system);
-
+        
+        InputStream input;
+        try {
+            input = new FileInputStream("conf.properties");
+            // load properties file
+            prop.load(input);
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        
+        ipAddress = prop.getProperty("ipAddress");
+        port = Integer.parseInt(prop.getProperty("port"));
+        
         final Flow<HttpRequest, HttpResponse, NotUsed> routeFlow = app.createRoute().flow(system, materializer);
         final CompletionStage<ServerBinding> binding = http.bindAndHandle(routeFlow,
                 ConnectHttp.toHost(ipAddress, port), materializer);
@@ -48,7 +75,12 @@ public class Server extends AllDirectives {
                 + port
                 + "/\nPress RETURN to stop..."
         );
-        System.in.read();
+        
+        try {
+            System.in.read();
+        } catch (IOException ex) {
+            Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
+        }
 
         binding
             .thenCompose(ServerBinding::unbind) 
@@ -57,12 +89,6 @@ public class Server extends AllDirectives {
 
     protected Route createRoute() {
         return routes.routes();
-    }
-    
-    private void readSettings()
-    {
-        ipAddress = Settings.ipAddress;
-        port = Settings.port;
     }
 }
 

@@ -19,22 +19,23 @@ import akka.util.ByteString;
  */
 public class Routes extends AllDirectives {
 
-    final private LoggingAdapter log;
-    final private CDRSource cdrSource;
-            
-    final ByteString start = ByteString.fromString("[");
-    final ByteString between = ByteString.fromString(Settings.jsonSeparator);
-    final ByteString end = ByteString.fromString("]");
+    private final CDRSource cdrSource;
+    private final ByteString start;
+    private final ByteString between;
+    private final ByteString end;
     
-    final Flow<ByteString, ByteString, NotUsed> compactArrayRendering =
-      Flow.of(ByteString.class).intersperse(start, between, end);
-
-    final JsonEntityStreamingSupport compactJsonSupport = EntityStreamingSupport.json()
-      .withFramingRendererFlow(compactArrayRendering);
+    final Flow<ByteString, ByteString, NotUsed> compactArrayRendering;
+    final JsonEntityStreamingSupport compactJsonSupport;
     
     public Routes(ActorSystem system) {
-        this.log = Logging.getLogger(system, this);
         this.cdrSource = new CDRSource();
+        
+        this.start = ByteString.fromString("[");
+        this.between = ByteString.fromString("/");
+        this.end = ByteString.fromString("]");
+        
+        this.compactArrayRendering = Flow.of(ByteString.class).intersperse(start, between, end);
+        this.compactJsonSupport = EntityStreamingSupport.json().withFramingRendererFlow(compactArrayRendering);
     }
 
     public Route routes() {
